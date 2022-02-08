@@ -73,7 +73,8 @@ python manage.py makemigrations snippets
 python manage.py migrate snippets
 ```
 
-__Step 4 - Create Serializers__
+__Step 4 - Create Serializers__:
+
 The serializers effectively help with converting to and from the Django inbuilt Querysets, which are harder to work with when building out a REST API. So these take the Querysets and output JSON. 
 
 The rest_framework app has a module called serializer which is basically like a Django Form. 
