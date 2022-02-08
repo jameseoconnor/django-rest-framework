@@ -73,7 +73,7 @@ python manage.py makemigrations snippets
 python manage.py migrate snippets
 ```
 
-__Step 4 - Create Serializers__:
+__Step 4 - Create Serializers__
 
 The serializers effectively help with converting to and from the Django inbuilt Querysets, which are harder to work with when building out a REST API. So these take the Querysets and output JSON. 
 
@@ -122,3 +122,73 @@ And another one to update an existing object. This takes the object and the new 
         instance.save()
         return instance
 ```
+
+__Step 5 - Test Using Python Shell__
+
+To make it all work together we need four things: 
+```
+from snippets.models import Snippet
+from snippets.serializers import SnippetSerializer
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+```
+
+The Snippet model, the SnippetSerializer model and a renderer and parser from the rest_framework app. 
+
+Create a new code snippet: 
+```
+snippet = Snippet(code='foo = "bar"\n')
+snippet.save()
+```
+
+If we take this snippet, and pass it through our serializer, the data property of the returned object is converted to a Python primitive datatype. 
+
+```
+serializer = SnippetSerializer(snippet)
+serializer.data
+```
+
+Then if we take this Python primitive, and use JSONRenderer() from the rest_framework.renderers, we get our valid JSON output. 
+
+```
+content = JSONRenderer().render(serializer.data)
+```
+
+If we want to deserialize from JSON to the object instance, we do the following. 
+
+1) Create a bytes stream to write the content to. This allows us to operate on the JSON as if it were a file, we write it to a stream and we can perform operations on it then.  If you have a function that expects a file object to write to, then you can give it that in-memory buffer instead of a file. 
+
+2) Use the rest_framework JSONParser() class to parse out the stream to python primitive datatype 
+
+3) Create a new serializer from the SnippetSerializer class, pass the python primitive into it and call the save() method. 
+
+
+
+```
+import io
+
+stream = io.BytesIO(content)
+data = JSONParser().parse(stream)
+``` 
+
+Serialize  to JSON ===============================>
+
+OBJECT INSTANCE <====> PYTHON PRIMITIVE <====> JSON
+
+<============================ Deserialize from JSON 
+
+
+
+__Using ModelSerializer Vs Serializer__
+There is a lot of duplication between our model definitions and our serializer definitions, so we can use the ModelSerializer to reduce this duplication. 
+
+Also we don't have to define a ```create()``` and an ```update()``` method for the serializer. 
+```
+class SnippetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Snippet
+        fields = ['id', 'title', 'code', 'linenos', 'language', 'style']
+```
+
+__Step 6 - Writing Views Using Serializer__
+
