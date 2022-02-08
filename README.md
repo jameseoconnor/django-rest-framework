@@ -1,5 +1,10 @@
 # django-rest-framework
 
+Tutorial from [~~here~~](
+https://www.django-rest-framework.org/tutorial/1-serialization/), rewritten for my own understanding. 
+
+
+
 __Step 1 - Create Virtualenv + Initialise Django Project__
 ```
 python3 -m venv django-rest-env
@@ -10,7 +15,7 @@ django-admin startproject tutorial
 cd tutorial
 ```
 
-Side note
+*Side note*
 ```
 Use this to remove any files that you want to remoive from git 
 git rm --cached .  -r 
@@ -30,3 +35,7 @@ INSTALLED_APPS = [
     'snippets',
 ]
 ```
+
+__Step 2 - Create Django App__
+
+This tutorial involves creating a simple app that stores code snippets. So the first thing we always do id 
