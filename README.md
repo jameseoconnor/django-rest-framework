@@ -38,7 +38,7 @@ INSTALLED_APPS = [
 
 __Step 3 - Create Django Model(s)__
 
-This tutorial involves creating a simple app that stores code snippets. So the first thing we always do is create our model. 
+This tutorial involves creating a simple app that stores code snippets. So the first thing we always do is create our model.The LEXERS,  LANGUAGE_CHOICES and STYLE_CHOICES are all just lists created from the pygments library to populate the choices in a CharField. 
 
 ```
 from pyexpat import model
@@ -71,4 +71,53 @@ and then we make those migrations and migrate
 ```
 python manage.py makemigrations snippets
 python manage.py migrate snippets
+```
+
+__Step 4 - Create Serializers__
+The serializers effectively help with converting to and from the Django inbuilt Querysets, which are harder to work with when building out a REST API. So these take the Querysets and output JSON. 
+
+The rest_framework app has a module called serializer which is basically like a Django Form. 
+
+Import it: 
+```
+from rest_framework import serializers
+```
+
+Then define a serializer class and derive it from the parent Serializer class: 
+```
+class SnippetSerializer(serializers.Serializer):
+```
+
+Define the fields that we want to serialize/ deserialize, much in the same way we do for model definition: 
+```
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    code = serializers.CharField(style={'base_template': 'textarea.html'})
+    linenos = serializers.BooleanField(required=False)
+    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
+    style = serializers.ChoiceField(choices=STYLE_CHOICES, default='friendly')
+```
+
+Define a method to create a new item via the serializer. This takes in a dict of validated data and gets unpacked to fill out the key-value fields in the Snippet.objects.create() method.  
+```
+    def create(self, validated_data):
+        """
+        Create and return a new `Snippet` instance, given the validated data.
+        """
+        return Snippet.objects.create(**validated_data)
+```
+
+And another one to update an existing object. This takes the object and the new data as two parameters. 
+```
+    def update(self, instance, validated_data):
+        """
+        Update and return an existing `Snippet` instance, given the validated data.
+        """
+        instance.title = validated_data.get('title', instance.title)
+        instance.code = validated_data.get('code', instance.code)
+        instance.linenos = validated_data.get('linenos', instance.linenos)
+        instance.language = validated_data.get('language', instance.language)
+        instance.style = validated_data.get('style', instance.style)
+        instance.save()
+        return instance
 ```
